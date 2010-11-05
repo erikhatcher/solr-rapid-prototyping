@@ -452,35 +452,7 @@
          use the never304="true" option and do not specify a value for
          <cacheControl>
     -->
-    <!-- <httpCaching never304="true"> -->
-    <httpCaching lastModifiedFrom="openTime"
-                 etagSeed="Solr">
-       <!-- lastModFrom="openTime" is the default, the Last-Modified value
-            (and validation against If-Modified-Since requests) will all be
-            relative to when the current Searcher was opened.
-            You can change it to lastModFrom="dirLastMod" if you want the
-            value to exactly corrispond to when the physical index was last
-            modified.
-
-            etagSeed="..." is an option you can change to force the ETag
-            header (and validation against If-None-Match requests) to be
-            differnet even if the index has not changed (ie: when making
-            significant changes to your config file)
-
-            lastModifiedFrom and etagSeed are both ignored if you use the
-            never304="true" option.
-       -->
-       <!-- If you include a <cacheControl> directive, it will be used to
-            generate a Cache-Control header, as well as an Expires header
-            if the value contains "max-age="
-
-            By default, no Cache-Control header is generated.
-
-            You can use the <cacheControl> option even if you have set
-            never304="true"
-       -->
-       <!-- <cacheControl>max-age=30, public</cacheControl> -->
-    </httpCaching>
+    <httpCaching never304="true"/>
   </requestDispatcher>
 
 
@@ -506,115 +478,6 @@
 
   <!-- Uncomment this RequestHandler to enable statistics collection with solr Gaze plug-in  -->
   <!-- <requestHandler name="/solrgaze" class="com.lucidimagination.gaze.plugin.StatMonitor" /> -->
-
-<!-- Please refer to http://wiki.apache.org/solr/SolrReplication for details on configuring replication -->
-<!-- remove the <lst name="master"> section if this is just a slave -->
-<!-- remove  the <lst name="slave"> section if this is just a master -->
-<!--
-<requestHandler name="/replication" class="solr.ReplicationHandler" >
-    <lst name="master">
-      <str name="replicateAfter">commit</str>
-      <str name="replicateAfter">startup</str>
-      <str name="confFiles">schema.xml,stopwords.txt</str>
-    </lst>
-    <lst name="slave">
-      <str name="masterUrl">http://localhost:8983/solr/replication</str>
-      <str name="pollInterval">00:00:60</str>
-    </lst>
-</requestHandler>-->
-
-  <!-- DisMaxRequestHandler allows easy searching across multiple fields
-       for simple user-entered phrases.  It's implementation is now
-       just the standard SearchHandler with a default query type
-       of "dismax". 
-       see http://wiki.apache.org/solr/DisMaxRequestHandler
-   -->
-  <requestHandler name="dismax" class="solr.SearchHandler" >
-    <lst name="defaults">
-     <str name="defType">dismax</str>
-     <str name="echoParams">explicit</str>
-     <float name="tie">0.01</float>
-     <str name="qf">
-        text^0.5 features^1.0 name^1.2 sku^1.5 id^10.0 manu^1.1 cat^1.4
-     </str>
-     <str name="pf">
-        text^0.2 features^1.1 name^1.5 manu^1.4 manu_exact^1.9
-     </str>
-     <str name="bf">
-        popularity^0.5 recip(price,1,1000,1000)^0.3
-     </str>
-     <str name="fl">
-        id,name,price,score
-     </str>
-     <str name="mm">
-        2&lt;-1 5&lt;-2 6&lt;90%
-     </str>
-     <int name="ps">100</int>
-     <str name="q.alt">*:*</str>
-     <!-- example highlighter config, enable per-query with hl=true -->
-     <str name="hl.fl">text features name</str>
-     <!-- for this field, we want no fragmenting, just highlighting -->
-     <str name="f.name.hl.fragsize">0</str>
-     <!-- instructs Solr to return the field itself if no query terms are
-          found -->
-     <str name="f.name.hl.alternateField">name</str>
-     <str name="f.text.hl.fragmenter">regex</str> <!-- defined below -->
-    </lst>
-  </requestHandler>
-
-  <!-- Note how you can register the same handler multiple times with
-       different names (and different init parameters)
-    -->
-  <requestHandler name="partitioned" class="solr.SearchHandler" >
-    <lst name="defaults">
-     <str name="defType">dismax</str>
-     <str name="echoParams">explicit</str>
-     <str name="qf">text^0.5 features^1.0 name^1.2 sku^1.5 id^10.0</str>
-     <str name="mm">2&lt;-1 5&lt;-2 6&lt;90%</str>
-     <!-- This is an example of using Date Math to specify a constantly
-          moving date range in a config...
-       -->
-     <str name="bq">incubationdate_dt:[* TO NOW/DAY-1MONTH]^2.2</str>
-    </lst>
-    <!-- In addition to defaults, "appends" params can be specified
-         to identify values which should be appended to the list of
-         multi-val params from the query (or the existing "defaults").
-
-         In this example, the param "fq=instock:true" will be appended to
-         any query time fq params the user may specify, as a mechanism for
-         partitioning the index, independent of any user selected filtering
-         that may also be desired (perhaps as a result of faceted searching).
-
-         NOTE: there is *absolutely* nothing a client can do to prevent these
-         "appends" values from being used, so don't use this mechanism
-         unless you are sure you always want it.
-      -->
-    <lst name="appends">
-      <str name="fq">inStock:true</str>
-    </lst>
-    <!-- "invariants" are a way of letting the Solr maintainer lock down
-         the options available to Solr clients.  Any params values
-         specified here are used regardless of what values may be specified
-         in either the query, the "defaults", or the "appends" params.
-
-         In this example, the facet.field and facet.query params are fixed,
-         limiting the facets clients can use.  Faceting is not turned on by
-         default - but if the client does specify facet=true in the request,
-         these are the only facets they will be able to see counts for;
-         regardless of what other facet.field or facet.query params they
-         may specify.
-
-         NOTE: there is *absolutely* nothing a client can do to prevent these
-         "invariants" values from being used, so don't use this mechanism
-         unless you are sure you always want it.
-      -->
-    <lst name="invariants">
-      <str name="facet.field">cat</str>
-      <str name="facet.field">manu_exact</str>
-      <str name="facet.query">price:[* TO 500]</str>
-      <str name="facet.query">price:[500 TO *]</str>
-    </lst>
-  </requestHandler>
 
 
   <!--
@@ -655,12 +518,15 @@
   suggestions.  -->
   <searchComponent name="spellcheck" class="solr.SpellCheckComponent">
 
-    <str name="queryAnalyzerFieldType">textSpell</str>
+    <str name="queryAnalyzerFieldType">suggest</str>
 
     <lst name="spellchecker">
       <str name="name">default</str>
-      <str name="field">name</str>
+      <str name="field">suggest</str>
       <str name="spellcheckIndexDir">./spellchecker</str>
+      <str name="distanceMeasure">org.apache.lucene.search.spell.JaroWinklerDistance</str>
+      <str name="accuracy">0.9</str>
+      <str name="buildOnCommit">true</str>
     </lst>
 
     <!-- a spellchecker that uses a different distance measure
@@ -1038,14 +904,13 @@
 
  <queryResponseWriter name="velocity" class="org.apache.solr.request.VelocityResponseWriter"/> 
   
-   <!-- /itas mapping for Solritas view with some basic good defaults: like dismax, facet on cat -->
-   <requestHandler name="/itas" class="solr.SearchHandler">
+   <requestHandler name="/data.gov" class="solr.SearchHandler">
       <lst name="defaults">
         <!-- VelocityResponseWriter settings -->
         <str name="wt">velocity</str>
         <str name="v.template">browse</str>
         <str name="v.layout">layout</str>
-        <str name="title">Solritas Demonstration</str>
+        <str name="title">Data.gov on Solr</str>
 
         <str name="rows">10</str>
         <str name="fl">*,score</str>
@@ -1054,41 +919,78 @@
         <str name="defType">dismax</str>
         <str name="q.alt">*:*</str>
         <str name="qf">
-           text^0.5 features^1.0 name^1.2 sku^1.5 id^10.0 manu^1.1 cat^1.4
+           text^0.5 description
         </str>
 
         <!-- faceting -->
         <str name="facet">on</str>
-        <str name="facet.field">cat</str>
+        <str name="facet.field">agency</str>
+        <str name="facet.field">specialized_data_category_designation</str>
+        <str name="facet.field">category</str>
+        <str name="facet.field">data_category_type</str>
+        <str name="facet.field">fgdc_compliance</str>
+        <str name="facet.field">privacy_and_confidentiality</str>
+        <str name="facet.field">data_quality_certification</str>
         <str name="facet.mincount">1</str>
 
-        <!-- Clustering -->
+        <!-- highlighting -->        
+        <str name="hl">on</str>
+        <str name="hl.fl">title,description</str>
+        <str name="f.title.hl.fragsize">0</str>
+        <str name="f.description.hl.snippets">3</str>
+        
+        <!-- spell checking -->
+        <str name="spellcheck">on</str>
+        <str name="spellcheck.onlyMorePopular">true</str>
+        <str name="spellcheck.extendedResults">false</str>
+        <str name="spellcheck.count">1</str>
+        <str name="spellcheck.collate">true</str>
+
+        <!-- clustering -->
         <bool name="clustering">true</bool>
         <str name="clustering.engine">default</str>
         <bool name="clustering.results">true</bool>
         <!-- The title field -->
-        <str name="carrot.title">name</str>
+        <str name="carrot.title">title</str>
         <str name="carrot.url">id</str>
         <!-- The field to cluster on -->
-        <str name="carrot.snippet">features</str>
+        <str name="carrot.snippet">description</str>
         <!-- produce summaries -->
         <bool name="carrot.produceSummary">true</bool>
         <!-- the maximum number of labels per cluster -->
         <!--<int name="carrot.numDescriptions">5</int>-->
         <!-- produce sub clusters -->
         <bool name="carrot.outputSubClusters">false</bool>
-
+      </lst>
+      <lst name="appends">
+        <str name="facet.query">{!key='csv'}csv_txt_access_point:[* TO *]</str>
+        <str name="facet.query">{!key='xml'}xml_access_point:[* TO *]</str>
+        <str name="facet.query">{!key='kml_kmz'}kml_kmz_access_point:[* TO *]</str>
       </lst>
 
       <arr name="last-components">
+        <str>spellcheck</str>
         <str>clusteringComponent</str>
       </arr>
    </requestHandler>
+
+   <requestHandler name="/data.gov/document" class="solr.SearchHandler">
+      <lst name="defaults">
+        <str name="wt">velocity</str>
+        <str name="v.template">document</str>
+        <str name="v.layout">layout</str>
+        <str name="title">Data.gov data set</str>
+        <str name="q">{!raw f=id v=$id}</str>
+      </lst>
+   </requestHandler>
  
- <requestHandler name="/dataimport" class="org.apache.solr.handler.dataimport.DataImportHandler">
-    <lst name="defaults">
-      <str name="config">${solr.config.dir:./solr/conf}/dataimporthandler/data-config.xml</str>
-    </lst>
-  </requestHandler>
+   <requestHandler name="/data.gov/compare" class="solr.DumpRequestHandler">
+      <lst name="defaults">
+        <str name="wt">velocity</str>
+        <str name="v.template">compare</str>
+        <str name="v.layout">layout</str>
+        <str name="title">Data.gov Query Comparison</str>
+      </lst>
+   </requestHandler>
 
 </config>

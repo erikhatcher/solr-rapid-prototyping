@@ -416,6 +416,21 @@
          any data added to them will be ignored outright.  --> 
     <fieldtype name="ignored" stored="false" indexed="false" multiValued="true" class="solr.StrField" /> 
 
+    <fieldType name="comma_separated" class="solr.TextField" sortMissingLast="true" omitNorms="true">
+      <analyzer>
+        <tokenizer class="solr.PatternTokenizerFactory" pattern="\s*,\s*"/>
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="suggestable" class="solr.TextField" positionIncrementGap="100">
+      <analyzer>
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.LowerCaseFilterFactory"/>
+        <filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z])" replacement="" replace="all"/>
+        <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" enablePositionIncrements="true" />
+      </analyzer>
+    </fieldType>
+    
  </types>
 
 
@@ -447,50 +462,20 @@
    -->
 
    <field name="id" type="string" indexed="true" stored="true" required="true" /> 
-   <field name="sku" type="textTight" indexed="true" stored="true" omitNorms="true"/>
-   <field name="name" type="textgen" indexed="true" stored="true"/>
-   <field name="alphaNameSort" type="alphaOnlySort" indexed="true" stored="false"/>
-   <field name="manu" type="textgen" indexed="true" stored="true" omitNorms="true"/>
-   <field name="cat" type="text_ws" indexed="true" stored="true" multiValued="true" omitNorms="true" />
-   <field name="features" type="text" indexed="true" stored="true" multiValued="true"/>
-   <field name="includes" type="text" indexed="true" stored="true" termVectors="true" termPositions="true" termOffsets="true" />
-
-   <field name="weight" type="float" indexed="true" stored="true"/>
-   <field name="price"  type="float" indexed="true" stored="true"/>
-   <field name="popularity" type="int" indexed="true" stored="true" />
-   <field name="inStock" type="boolean" indexed="true" stored="true" />
-
 
    <!-- Common metadata fields, named specifically to match up with
      SolrCell metadata when parsing rich documents such as Word, PDF.
      Some fields are multiValued only because Tika currently may return
      multiple values for them.
    -->
-   <field name="title" type="text" indexed="true" stored="true" multiValued="true"/>
-   <field name="subject" type="text" indexed="true" stored="true"/>
+   <field name="title" type="text" indexed="true" stored="true"/>
    <field name="description" type="text" indexed="true" stored="true"/>
-   <field name="comments" type="text" indexed="true" stored="true"/>
-   <field name="author" type="textgen" indexed="true" stored="true"/>
-   <field name="keywords" type="textgen" indexed="true" stored="true"/>
-   <field name="category" type="textgen" indexed="true" stored="true"/>
-   <field name="content_type" type="string" indexed="true" stored="true" multiValued="true"/>
-   <field name="last_modified" type="date" indexed="true" stored="true"/>
-   <field name="links" type="string" indexed="true" stored="true" multiValued="true"/>
-
+   <field name="keywords" type="comma_separated" indexed="true" stored="true"/>
+   <field name="suggest" type="suggestable" indexed="true" stored="false" multiValued="true"/>
 
    <!-- catchall field, containing all other searchable text fields (implemented
         via copyField further on in this schema  -->
    <field name="text" type="text" indexed="true" stored="false" multiValued="true"/>
-
-   <!-- catchall text field that indexes tokens both normally and in reverse for efficient
-        leading wildcard queries. -->
-   <field name="text_rev" type="text_rev" indexed="true" stored="false" multiValued="true"/>
-
-   <!-- non-tokenized version of manufacturer to make it easier to sort or group
-        results by manufacturer.  copied from "manu" via copyField -->
-   <field name="manu_exact" type="string" indexed="true" stored="false"/>
-
-   <field name="payloads" type="payloads" indexed="true" stored="true"/>
 
    <!-- Uncommenting the following will create a "timestamp" field using
         a default value of "NOW" to indicate when each document was indexed.
@@ -536,7 +521,7 @@
         field name or dynamic field, rather than reporting them as an error. 
         alternately, change the type="ignored" to some other type e.g. "text" if you want 
         unknown fields indexed and/or stored by default --> 
-   <!--dynamicField name="*" type="ignored" multiValued="true" /-->
+   <dynamicField name="*" type="string" multiValued="true"/>
    
  </fields>
 
@@ -555,13 +540,11 @@
         is added to the index.  It's used either to index the same field differently,
         or to add multiple fields to the same field for easier/faster searching.  -->
 
-   <copyField source="cat" dest="text"/>
-   <copyField source="name" dest="text"/>
-   <copyField source="manu" dest="text"/>
-   <copyField source="features" dest="text"/>
-   <copyField source="includes" dest="text"/>
-   <copyField source="manu" dest="manu_exact"/>
-	
+   <copyField source="*" dest="text"/>
+
+   <copyField source="title" dest="suggest"/>
+   <copyField source="description" dest="suggest"/>
+
    <!-- Above, multiple source fields are copied to the [text] field. 
 	  Another way to map multiple source fields to the same 
 	  destination field is to use the dynamic field syntax. 

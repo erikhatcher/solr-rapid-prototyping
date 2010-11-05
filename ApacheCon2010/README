@@ -1,9 +1,42 @@
-* Install LucidWorks for Solr Certified Distribution:
-  http://www.lucidimagination.com/Downloads/LucidWorks-for-Solr
-  
-* Copy configuration files:  instructions TBD
+Rapid Prototyping with Solr - ApacheCon 2010
+--------------------------------------------
 
-* (Re)start LucidWorks for Solr
+Materials created and presented by Erik Hatcher of Lucid Imagination, 4 November 2010, Atlanta GA.
 
+Steps to run the example application:
 
+1) Install LucidWorks for Solr Certified Distribution:
+   http://www.lucidimagination.com/Downloads/LucidWorks-for-Solr
+   Version 1.4 was used for the presentation
+
+2) Download data.gov catalog CSV to your prototyping/ApacheCon2010 directory:
+   http://www.data.gov/raw/92
    
+3) Replace LucidWorks for Solr configuration:
+   cd ~/LucidWorks/lucidworks
+   mv solr solr-original
+   cp -R prototyping/ApacheCon2010/solr solr
+     
+4) (Re)start LucidWorks for Solr
+   cd ~/LucidWorks
+   ./stop.sh
+   ./start.sh
+   
+5) Index the data:
+   cd prototyping/ApacheCon2010
+   ./index.sh
+
+6) Main search application: http://localhost:8983/solr/data.gov
+   Comparison visualization: http://localhost:8983/solr/data.gov/compare
+     - requires internet connection to use Google Charts
+
+For more information -
+     http://www.lucidimagination.com
+
+     LucidFind
+       - search Lucene ecosystem: mailing lists, wikis, JIRA, etc
+       http://search.lucidimagination.com
+       
+     Getting started with LucidWorks Enterprise:
+       http://www.lucidimagination.com/enterprise-search-solutions     
+     

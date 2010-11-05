@@ -1,0 +1,21 @@
+<script type="text/javascript">
+  function generate_venn() {
+    var a=encodeURIComponent($("#a").val());
+    var b=encodeURIComponent($("#b").val());
+    var c=encodeURIComponent($("#c").val());
+    var ab='('+a+')+AND+('+b+')';
+    var ac='('+a+')+AND+('+c+')';
+    var bc='('+b+')+AND+('+c+')';
+    var abc='('+a+')+AND+('+b+')+AND+('+c+')';
+    $('#venn').load('/solr/select?q=*:*&wt=velocity&v.template=venn&rows=0&facet=on&facet.query={!key=a}'+a+'&facet.query={!key=b}'+b+'&facet.query={!key=c}'+c+'&facet.query={!key=intersect_ab}'+ab+'&facet.query={!key=intersect_ac}'+ac+'&facet.query={!key=intersect_bc}'+bc+'&facet.query={!key=intersect_abc}'+abc+'&q_a='+a+'&q_b='+b+'&q_c='+c+'&q_ab='+ab+'&q_ac='+ac+'&q_bc='+bc+'&q_abc='+abc);
+    return false;
+  }
+</script>
+<form action="#" id="compare_form" onsubmit="return generate_venn()">
+  A: <input type="text" name="a" id="a" value="health"/>
+  B: <input type="text" name="b" id="b" value="weather"/>
+  C: <input type="text" name="c" id="c" value="ozone"/>
+  <input type="submit"/>
+</form>
+
+<div id="venn"></div>

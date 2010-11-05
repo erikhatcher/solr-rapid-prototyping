@@ -1,0 +1,13 @@
+#set( $name_map = {"agency":"Agency", "specialized_data_category_designation" : "Designation", "category" : "Category","data_category_type":"Category Type", "fgdc_compliance":"FGDC Compliance", "privacy_and_confidentiality":"Privacy & Confidentiality", "data_quality_certification":"Data Quality Certification"})
+
+#if($response.facetFields)
+  <h2>Field Facets</h2>
+  #foreach($field in $response.facetFields)
+    <span class="facet-field">#if($name_map.get($field.name)) $name_map.get($field.name) #else $field.name #end</span>
+    <ul>
+    #foreach($facet in $field.values)
+      <li><a href="#url_for_facet_filter($field.name, $facet.name)">$facet.name</a> ($facet.count)</li>
+    #end
+    </ul>
+  #end
+#end

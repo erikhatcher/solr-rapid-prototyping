@@ -1,23 +1,29 @@
-#macro(nl2ul $named_list)
-  <ul>
-  #foreach($kv in $named_list)
-    <li>$kv.key ($kv.value)
-      #nl2ul($kv.value)
-    </li>
-  #end
-  </ul>
-#end
 
-#macro(url_for_filters $filter_queries)
-  /solr/itas?fq=$filter_queries
-#end
+#macro(param $key)$request.params.get($key)#end
 
-#macro(url_for_home)/solr/itas#end
+#macro(url_for_solr)/solr#if($request.core.name != "")/$request.core.name#end#end
+#macro(url_for_home)#url_for_solr/data.gov#end
 
-#macro(url_for_start $start)/solr/itas?start=$start&q=$!{esc.url($params.get('q'))}#end
+#macro(q)&q=$!{esc.url($params.get('q'))}#end
 
-## TODO: need to add escaping
-#macro(url_for_nested_facet $field $value)/solr/itas?fq=$field:%22$value%22#end
+#macro(fqs $p)#foreach($fq in $p)#if($velocityCount>1)&#{end}fq=$esc.url($fq)#end#end
+
+#macro(debug)#if($request.params.get('debugQuery'))&debugQuery=true#end#end
+
+#macro(lensNoQ)?#if($request.params.getParams('fq') and $list.size($request.params.getParams('fq')) > 0)&#fqs($request.params.getParams('fq'))#end#debug#end
+
+#macro(lens)#lensNoQ#q#end
+        
+#macro(url_for_lens)#{url_for_home}#lens#end
+
+#macro(url_for_start $start)#url_for_home#lens&start=$start#end
+
+#macro(url_for_filters $p)#url_for_home?#q#if($list.size($p) > 0)&#fqs($p)#end#debug#end
+
+#macro(url_for_nested_facet_query $field)#url_for_home#lens&fq=$esc.url($field)#end
+
+## TODO: convert to use {!raw f=$field}$value (with escaping of course)
+#macro(url_for_facet_filter $field $value)#url_for_home#lens&fq=$esc.url($field):%22$esc.url($value)%22#end
 
 #macro(link_to_previous_page $text)
   #if($page.current_page_number > 1)
@@ -43,5 +49,3 @@
     #end
   #end
 #end
-
-#macro(param $key)$request.params.get($key)#end

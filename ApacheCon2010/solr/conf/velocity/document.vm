@@ -1,0 +1,15 @@
+#set($doc= $response.results.get(0))
+<span><a href="$doc.getFieldValue('id')">$doc.getFieldValue('id')</a></span>
+
+<table>
+#foreach($fieldname in $doc.fieldNames)
+  <tr>
+    <td>$fieldname:</td>
+    <td>
+     #foreach($value in $doc.getFieldValues($fieldname))
+       $esc.html($value)
+     #end
+     </td>
+  </tr>
+#end
+</table>

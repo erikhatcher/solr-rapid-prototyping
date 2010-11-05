@@ -1,0 +1,5 @@
+<hr/>
+<div>
+<a href="http://na.apachecon.com/c/acna2010/"><img src="http://na.apachecon.com/page_attachments/0000/0357/ApacheCon_North_America_2010_v2.gif"/></a>
+<a href="#url_for_home#if($request.params.get('debugQuery'))?debugQuery=true#end"><img src="#{url_for_solr}/admin/solr_small.png"/></a>
+</div>

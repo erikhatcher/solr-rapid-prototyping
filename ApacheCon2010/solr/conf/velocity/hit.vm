@@ -1,16 +1,26 @@
-<div class="result-document">
-  #foreach($fieldname in $doc.fieldNames)
-     <p>
-       <span class="field-name">$fieldname :</span>
-       <span>
-       #foreach($value in $doc.getFieldValues($fieldname))
-         $value
-       #end
-       </span>
-     </p>
+#macro(f $f)
+  #if($response.response.highlighting.get($doc.getFieldValue('id')).get($f))
+    #foreach($fragment in $response.response.highlighting.get($doc.getFieldValue('id')).get($f))
+      ... $fragment ...
+    #end
+  #else
+    #foreach($v in $doc.getFieldValues($f))
+      $esc.html($v)
+    #end
   #end
+#end
+
+<div class="result-document">
+  <span><a href="/solr/data.gov/document?id=$esc.url($doc.getFieldValue('id'))">#f('title')</a></span>
+
+  <p>
+    #f('description')
+  </p>
+
   #if($params.getBool("debugQuery",false))
     <a href="#" onclick='jQuery(this).siblings("pre").toggle(); return false;'>toggle explain</a>
     <pre style="display:none">$response.getExplainMap().get($doc.getFirstValue('id'))</pre>
   #end
 </div>
+
+

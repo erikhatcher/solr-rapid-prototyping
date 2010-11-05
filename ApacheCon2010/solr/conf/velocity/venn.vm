@@ -1,0 +1,14 @@
+#set($values = $response.response.facet_counts.facet_queries)
+#set($params = $response.responseHeader.params)
+
+<img src="http://chart.apis.google.com/chart?chs=600x400&cht=v&chd=t:$values.a,$values.b,$values.c,$values.intersect_ab,$values.intersect_ac,$values.intersect_bc,$values.intersect_abc&chdl=$esc.url($params.q_a)|$esc.url($params.q_b)|$esc.url($params.q_c)"/>
+
+<ul>
+  <li>A: <a href="/solr/data.gov?q={!lucene}$params.q_a">$params.q_a</a> ($values.a)</li>
+  <li>B: <a href="/solr/data.gov?q={!lucene}$params.q_b">$params.q_b</a> ($values.b)</li>
+  <li>C: <a href="/solr/data.gov?q={!lucene}$params.q_c">$params.q_c</a> ($values.c)</li>
+  <li>A&B: <a href="/solr/data.gov?q={!lucene}$params.q_ab">$params.q_ab</a> ($values.intersect_ab)</li>
+  <li>A&C: <a href="/solr/data.gov?q={!lucene}$params.q_ac">$params.q_ac</a> ($values.intersect_ac)</li>
+  <li>B&C: <a href="/solr/data.gov?q={!lucene}$params.q_bc">$params.q_bc</a> ($values.intersect_bc)</li>
+  <li>A&B&C: <a href="/solr/data.gov?q={!lucene}$params.q_abc">$params.q_abc</a> ($values.intersect_abc)</li>
+</ul>
